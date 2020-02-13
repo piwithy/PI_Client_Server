@@ -15,14 +15,12 @@ public class PiThread implements Callable<Integer> {
 
     private int nIter,tID;
 
-    DatagramSocket socket;
 
 
     public PiThread(int nIter, int tID) {
         this.nIter = nIter;
         this.tID = tID;
         this.logger= LogManager.getLogger("PiDart Thread " + tID);
-        this.socket =socket;
     }
 
     public int piDarts(){

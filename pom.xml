@@ -11,7 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <skipUnitTests>true</skipUnitTests>
+        <skipUnitTests>false</skipUnitTests>
         <mainClass>fr.piwithy.PiServer</mainClass>
     </properties>
 
