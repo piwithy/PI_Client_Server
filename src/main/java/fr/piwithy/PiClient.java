@@ -21,6 +21,15 @@ public class PiClient implements Runnable {
     public static int respCnt = 0;
     public static ArrayList<Double> piList;
 
+    public static void endConnection(InetAddress server) throws IOException {
+        byte[] buff = new byte[256];
+        DatagramSocket socket = new DatagramSocket();
+        ByteBuffer.wrap(buff).putInt(-1);
+        DatagramPacket packet = new DatagramPacket(buff, buff.length, server, 4445);
+        socket.send(packet);
+        socket.close();
+    }
+
     public static synchronized void incResponse() {
         respCnt++;
     }
@@ -123,6 +132,11 @@ public class PiClient implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+        try {
+            endConnection(srvAddr);
+        } catch (IOException e) {
+            LOGGER.warn("Error while requesting Server Stop");
         }
         LOGGER.info(getRespCnt() + " Responses");
         LOGGER.info("TimeOuts: " + ((repeat) - getRespCnt()));
