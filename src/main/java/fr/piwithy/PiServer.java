@@ -47,11 +47,15 @@ public class PiServer implements Runnable {
                 exit(-1);
             }
             int data = ByteBuffer.wrap(packet.getData()).getInt();
-            LOGGER.info("["+packet.getAddress()+":"+packet.getPort()+"] Requested Pi W/" + data + " iteration");
-            PiRequest  rq = new PiRequest(data, socket, packet.getAddress(), packet.getPort());
-            piPool.submit(new PiManager(rq));
+            if(data==-1) {
+                this.running=false;
+                LOGGER.info("Stopping server as requested by " + packet.getAddress()+":"+packet.getPort());
+            }else {
+                LOGGER.info("[" + packet.getAddress() + ":" + packet.getPort() + "] Requested Pi W/" + data + " iteration");
+                PiRequest rq = new PiRequest(data, socket, packet.getAddress(), packet.getPort());
+                piPool.submit(new PiManager(rq));
+            }
         }
-        running =false;
     }
 
     public static void main(String[] args){
