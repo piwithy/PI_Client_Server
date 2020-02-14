@@ -65,9 +65,9 @@ public class PiClient implements Runnable {
     public double requestPi(int nIter) throws InterruptedException {
         byte[] buff = new byte[256];
         ByteBuffer.wrap(buff).putInt(nIter);
-        DatagramPacket packet = new DatagramPacket(buff, buff.length, address, 4445);
+        DatagramPacket packet = new DatagramPacket(buff, buff.length, address, ClientConfig.getInstance().getServerPort());
         try {
-            this.socket.setSoTimeout(120000);
+            this.socket.setSoTimeout(ClientConfig.getInstance().getServerTimeout()*1000);
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -106,21 +106,15 @@ public class PiClient implements Runnable {
     }
 
     public static void main(String[] args) {
+        ClientConfig clientConfig = ClientConfig.getInstance();
         int repeat = 20;
         if (args.length > 0)
             repeat = Integer.parseInt(args[0]);
         ExecutorService executorService = Executors.newFixedThreadPool(repeat);
         ArrayList<Runnable> requests = new ArrayList<>();
-        InetAddress srvAddr=null;
-        try {
-            srvAddr = InetAddress.getLocalHost();
-            LOGGER.info("Server Address: " + srvAddr);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            exit(-1);
-        }
+            LOGGER.info("Server Address: " + clientConfig.getServerAddress());
         for (int i = 0; i < repeat; i++) {
-            requests.add(new PiClient(ThreadLocalRandom.current().nextInt(100000000, 1000000000), srvAddr));
+            requests.add(new PiClient(ThreadLocalRandom.current().nextInt(clientConfig.getMinIteration(), clientConfig.getMaxIteration()), clientConfig.getServerAddress()));
         }
         for (Runnable request : requests) {
             executorService.submit(request);
@@ -134,7 +128,7 @@ public class PiClient implements Runnable {
             }
         }
         try {
-            endConnection(srvAddr);
+            endConnection(ClientConfig.getInstance().getServerAddress());
         } catch (IOException e) {
             LOGGER.warn("Error while requesting Server Stop");
         }
