@@ -12,7 +12,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipUnitTests>false</skipUnitTests>
-        <mainClass>fr.piwithy.PiServer</mainClass>
+        <mainClass>fr.piwithy.Launcher</mainClass>
     </properties>
 
     <dependencies>

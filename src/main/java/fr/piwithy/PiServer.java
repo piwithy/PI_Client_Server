@@ -10,14 +10,13 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.System.exit;
 
-public class PiServer implements Runnable {
+public class PiServer{
 
     private DatagramSocket socket;
-    private int port;
-    private boolean running;
     private byte[] buf = new byte[256];
     private ExecutorService piPool;
 
@@ -25,9 +24,9 @@ public class PiServer implements Runnable {
 
     public PiServer(){
         try{
-            port = 4445;
+            int port = ServerConfig.getInstance().getPort();
             this.socket=new DatagramSocket(port);
-            LOGGER.info("Successfully Opened Socket on Port:" +port);
+            LOGGER.info("Successfully Opened Socket on Port:" + port);
         }catch (SocketException e){
             e.printStackTrace();
             exit(-1);
@@ -36,9 +35,8 @@ public class PiServer implements Runnable {
     }
 
     public void run(){
-        this.running=true;
         LOGGER.info("Waiting for Clients");
-        while (this.running){
+        do {
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try{
                 this.socket.receive(packet);
@@ -47,26 +45,25 @@ public class PiServer implements Runnable {
                 exit(-1);
             }
             int data = ByteBuffer.wrap(packet.getData()).getInt();
-            if(data==-1) {
-                this.running=false;
+            if(data== -1) {
                 LOGGER.info("Stopping server as requested by " + packet.getAddress()+":"+packet.getPort());
-                exit(0);
+                break;
             }else {
                 LOGGER.info("[" + packet.getAddress() + ":" + packet.getPort() + "] Requested Pi W/" + data + " iteration");
                 PiRequest rq = new PiRequest(data, socket, packet.getAddress(), packet.getPort());
                 piPool.submit(new PiManager(rq));
             }
 
-        }
-    }
-
-    public static void main(String[] args){
-        Thread t = new Thread(new PiServer());
-        t.start();
+        }while(true);
         try{
-            t.join();
-        }catch (InterruptedException e){
+            piPool.shutdown();
+            piPool.awaitTermination(5, TimeUnit.SECONDS);
+        }catch (InterruptedException e) {
             e.printStackTrace();
+        }finally {
+            if (!piPool.isTerminated())
+                PiServer.LOGGER.fatal("Canceling non-finished task!");
+            piPool.shutdownNow();
         }
     }
 

@@ -19,7 +19,7 @@ public class PiManager implements Runnable {
     public PiManager(PiRequest request) {
         this.nIter = request.nIter;
         this.request= request;
-        nThread = 8;
+        nThread = ServerConfig.getInstance().getNTread();
     }
 
 
