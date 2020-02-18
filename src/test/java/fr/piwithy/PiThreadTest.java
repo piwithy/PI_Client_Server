@@ -24,6 +24,14 @@ class PiThreadTest {
 
 
     @Test
+    void piDarts(){
+        PiThread piThread = new PiThread(nIter, 42);
+        int count = piThread.piDarts();
+        double pi = (double) count/nIter *4;
+        assertTrue(pi>3 && pi<4);
+    }
+
+    @Test
     void call() {
         ExecutorService executorService = Executors.newFixedThreadPool(nThread);
         ArrayList<Callable<Integer>> piThreads = new ArrayList<>();
